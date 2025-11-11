@@ -1,10 +1,8 @@
 from pathlib import Path
-
 BASE_DIR = Path(__file__).resolve().parent.parent
-
-SECRET_KEY = 'django-insecure-demo-key-1234567890'
+SECRET_KEY = 'insecure-dev-key'
 DEBUG = True
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -14,7 +12,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'estudiantes_app',
+    'estudiantes',
 ]
 
 MIDDLEWARE = [
@@ -27,7 +25,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'estudiantes_project.urls'
+ROOT_URLCONF = 'backend_django.urls'
 
 TEMPLATES = [
     {
@@ -45,7 +43,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'estudiantes_project.wsgi.application'
+WSGI_APPLICATION = 'backend_django.wsgi.application'
 
 DATABASES = {
     'default': {
@@ -54,10 +52,11 @@ DATABASES = {
     }
 }
 
+AUTH_PASSWORD_VALIDATORS = []
+
 LANGUAGE_CODE = 'es-es'
-TIME_ZONE = 'America/Bogota'
+TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
-STATIC_URL = '/static/'
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+STATIC_URL = 'static/'
