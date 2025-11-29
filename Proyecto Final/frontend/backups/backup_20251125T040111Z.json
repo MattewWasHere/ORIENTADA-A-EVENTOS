@@ -1,0 +1,15 @@
+{
+  "herramientas": [
+    {
+      "id": 1,
+      "codigo": "H002",
+      "nombre": "Martillo",
+      "tipo": "Electrico",
+      "ubicacion": "",
+      "estado": "disponible",
+      "created_at": "2025-11-25T03:49:18.760095Z",
+      "updated_at": "2025-11-25T03:49:18.760144Z"
+    }
+  ],
+  "prestamos": []
+}

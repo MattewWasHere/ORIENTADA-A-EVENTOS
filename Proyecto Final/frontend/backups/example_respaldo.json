@@ -1,0 +1,96 @@
+{
+    "herramientas": [
+        {
+            "codigo": "H001",
+            "nombre": "Taladro",
+            "tipo": "Eléctrico",
+            "ubicacion": "Bodega A",
+            "estado": "disponible",
+            "created_at": "2025-01-01T10:00:00",
+            "updated_at": "2025-01-01T10:00:00"
+        },
+        {
+            "codigo": "H002",
+            "nombre": "Llave inglesa",
+            "tipo": "Manual",
+            "ubicacion": "Bodega B",
+            "estado": "disponible",
+            "created_at": "2025-01-02T11:00:00",
+            "updated_at": "2025-01-02T11:00:00"
+        },
+        {
+            "codigo": "H003",
+            "nombre": "Multímetro",
+            "tipo": "Eléctrico",
+            "ubicacion": "Bodega A",
+            "estado": "prestada",
+            "created_at": "2025-01-03T12:00:00",
+            "updated_at": "2025-01-03T12:00:00"
+        },
+        {
+            "codigo": "H004",
+            "nombre": "Sierra",
+            "tipo": "Manual",
+            "ubicacion": "Bodega C",
+            "estado": "disponible",
+            "created_at": "2025-01-04T13:00:00",
+            "updated_at": "2025-01-04T13:00:00"
+        },
+        {
+            "codigo": "H005",
+            "nombre": "Cinta métrica",
+            "tipo": "Manual",
+            "ubicacion": "Bodega A",
+            "estado": "disponible",
+            "created_at": "2025-01-05T14:00:00",
+            "updated_at": "2025-01-05T14:00:00"
+        }
+    ],
+    "prestamos": [
+        {
+            "consecutivo": "P001",
+            "herramienta_codigo": "H003",
+            "usuario": "Juan Perez",
+            "fecha_salida": "2025-02-01T09:00:00",
+            "fecha_prevista": "2025-02-03T09:00:00",
+            "fecha_devolucion": null,
+            "created_at": "2025-02-01T09:00:00"
+        },
+        {
+            "consecutivo": "P002",
+            "herramienta_codigo": "H002",
+            "usuario": "Ana Gomez",
+            "fecha_salida": "2025-02-05T10:00:00",
+            "fecha_prevista": "2025-02-07T10:00:00",
+            "fecha_devolucion": null,
+            "created_at": "2025-02-05T10:00:00"
+        },
+        {
+            "consecutivo": "P003",
+            "herramienta_codigo": "H001",
+            "usuario": "Luis Diaz",
+            "fecha_salida": "2025-02-10T08:30:00",
+            "fecha_prevista": "2025-02-12T08:30:00",
+            "fecha_devolucion": "2025-02-12T08:00:00",
+            "created_at": "2025-02-10T08:30:00"
+        },
+        {
+            "consecutivo": "P004",
+            "herramienta_codigo": "H004",
+            "usuario": "Marta Ruiz",
+            "fecha_salida": "2025-02-11T11:00:00",
+            "fecha_prevista": "2025-02-13T11:00:00",
+            "fecha_devolucion": null,
+            "created_at": "2025-02-11T11:00:00"
+        },
+        {
+            "consecutivo": "P005",
+            "herramienta_codigo": "H005",
+            "usuario": "Carlos Lopez",
+            "fecha_salida": "2025-02-12T15:00:00",
+            "fecha_prevista": "2025-02-13T15:00:00",
+            "fecha_devolucion": null,
+            "created_at": "2025-02-12T15:00:00"
+        }
+    ]
+}

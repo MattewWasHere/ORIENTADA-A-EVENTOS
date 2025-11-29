@@ -1,0 +1,4 @@
+{
+  "INTERVALO_BACKUP_SEG": 600,
+  "API_URL": "http://127.0.0.1:8000/api"
+}
