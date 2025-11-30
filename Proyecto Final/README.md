@@ -1,37 +1,28 @@
+IHEP - Inventario de Herramientas y Préstamos (Entrega final - versión v5)
+Generado: 2025-11-29T21:02:07.462677 UTC
 
-# IHEP - Inventario de Herramientas y Préstamos
+Instrucciones para ejecutar en Visual Studio / Visual Studio Code:
 
-## Resumen
-Proyecto solicitado en RFP IHEP. Frontend en Tkinter y backend en Django REST Framework. No se usan llaves foráneas en la BD. Respaldo automático configurable.
+1) Abrir la carpeta del proyecto (IHEP_Final_Entrega_v5) en VS Code.
+2) Crear y activar un entorno virtual Python 3.10+:
+   python -m venv .venv
+   # Windows:
+   .\.venv\Scripts\activate
+   # mac/linux:
+   source .venv/bin/activate
+3) Instalar dependencias:
+   pip install -r requirements.txt
+4) Iniciar backend:
+   cd backend
+   python manage.py migrate
+   python manage.py loaddata initial_data.json
+   python manage.py runserver
+5) Iniciar frontend (en otra terminal dentro del workspace raíz):
+   cd frontend
+   python -m frontend
+6) Comprobar backups: revisa frontend/backups/*.json (se crean automáticamente según INTERVALO_BACKUP_SEG en frontend/config.json)
 
-## Requisitos
-- Python 3.10+
-- Django 4.x, djangorestframework
-- requests (para frontend)
-
-## Cómo ejecutar
-
-1. Backend:
-```bash
-cd backend
-python -m venv env
-source env/bin/activate  # o .\env\Scripts\activate en Windows
-pip install -r requirements.txt  # si existe; si no: pip install django djangorestframework
-python manage.py migrate
-python manage.py runserver
-```
-
-2. Frontend (en otra terminal, desde la raíz del proyecto):
-```bash
-python __main__.py
-```
-
-Variables de entorno:
-- `BACKEND_URL` o `API_URL` (el frontend usa `BACKEND_URL`) para apuntar al backend si no es `http://127.0.0.1:8000/api/`
-- `INTERVALO_BACKUP_SEG` intervalo en segundos para los respaldos (por defecto 60)
-
-Los respaldos se almacenan en `frontend/backups/`. Se incluye `example_respaldo.json` como ejemplo.
-
-## Notas
-- La integridad entre herramientas y préstamos se valida en el backend y el frontend sin usar ForeignKey.
-- El respaldo automático corre en un hilo separado para no bloquear la UI.
+Notas importantes:
+- El frontend usa tkinter y realiza validaciones de formulario (según PDF: validaciones en UI).
+- El backend expone endpoints REST para CRUD sin lógica de negocio compleja.
+- Para la sustentación, muestra los 5 registros pre-cargados en la base de datos (backend/initial_data.json).

@@ -5,7 +5,7 @@
     "fields": {
       "codigo": "H001",
       "nombre": "Taladro Inalámbrico",
-      "tipo": "Eléctrica",
+      "categoria": "Eléctrica",
       "ubicacion": "Bodega A",
       "estado": "disponible",
       "created_at": "2025-11-19T09:00:00Z",
@@ -18,7 +18,7 @@
     "fields": {
       "codigo": "H002",
       "nombre": "Llave Inglesa",
-      "tipo": "Mano",
+      "categoria": "Mano",
       "ubicacion": "Bodega A",
       "estado": "disponible",
       "created_at": "2025-11-19T09:01:00Z",
@@ -30,8 +30,8 @@
     "pk": 3,
     "fields": {
       "codigo": "H003",
-      "nombre": "Multimetro",
-      "tipo": "Medición",
+      "nombre": "Multímetro",
+      "categoria": "Medición",
       "ubicacion": "Bodega B",
       "estado": "disponible",
       "created_at": "2025-11-19T09:02:00Z",
@@ -44,7 +44,7 @@
     "fields": {
       "codigo": "H004",
       "nombre": "Sierra de Mano",
-      "tipo": "Mano",
+      "categoria": "Mano",
       "ubicacion": "Bodega C",
       "estado": "disponible",
       "created_at": "2025-11-19T09:03:00Z",
@@ -57,7 +57,7 @@
     "fields": {
       "codigo": "H005",
       "nombre": "Llave de Torque",
-      "tipo": "Medición",
+      "categoria": "Medición",
       "ubicacion": "Bodega C",
       "estado": "disponible",
       "created_at": "2025-11-19T09:04:00Z",
