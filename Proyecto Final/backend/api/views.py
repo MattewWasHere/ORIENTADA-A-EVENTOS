@@ -1,15 +1,14 @@
-from rest_framework import viewsets
-from api.models import Herramienta, Prestamo
-from api.serializers.herramienta_serializer import HerramientaSerializer
-from api.serializers.prestamo_serializer import PrestamoSerializer
 
-class HerramientaViewSet(viewsets.ModelViewSet):
-    queryset = Herramienta.objects.all().order_by('codigo')
+from rest_framework.viewsets import ModelViewSet
+from .models.herramienta import Herramienta
+from .models.prestamo import Prestamo
+from .serializers import HerramientaSerializer, PrestamoSerializer
+
+class HerramientaViewSet(ModelViewSet):
+    queryset = Herramienta.objects.all().order_by('id')
     serializer_class = HerramientaSerializer
     lookup_field = 'codigo'
 
-
-class PrestamoViewSet(viewsets.ModelViewSet):
-    queryset = Prestamo.objects.all().order_by('consecutivo')
+class PrestamoViewSet(ModelViewSet):
+    queryset = Prestamo.objects.all().order_by('id')
     serializer_class = PrestamoSerializer
-    lookup_field = 'consecutivo'

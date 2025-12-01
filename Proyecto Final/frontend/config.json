@@ -1,5 +1,0 @@
-{
-  "INTERVALO_BACKUP_SEG": 60,
-  "API_URL": "http://127.0.0.1:8000/api",
-  "BACKUP_FORMAT": "json"
-}

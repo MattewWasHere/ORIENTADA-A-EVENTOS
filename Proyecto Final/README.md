@@ -1,28 +1,26 @@
-IHEP - Inventario de Herramientas y Préstamos (Entrega final - versión v5)
-Generado: 2025-11-29T21:02:07.462677 UTC
 
-Instrucciones para ejecutar en Visual Studio / Visual Studio Code:
+IHEP - Proyecto final entregable (JSON backup)
 
-1) Abrir la carpeta del proyecto (IHEP_Final_Entrega_v5) en VS Code.
-2) Crear y activar un entorno virtual Python 3.10+:
+INSTRUCCIONES RÁPIDAS:
+
+1) Crear y activar virtualenv
    python -m venv .venv
-   # Windows:
-   .\.venv\Scripts\activate
-   # mac/linux:
-   source .venv/bin/activate
-3) Instalar dependencias:
-   pip install -r requirements.txt
-4) Iniciar backend:
+   .\.venv\Scripts\activate    (Windows)
+   source .venv/bin/activate     (Linux/Mac)
+
+2) Instalar dependencias:
+   pip install django djangorestframework requests tkcalendar
+
+3) Ejecutar backend:
    cd backend
    python manage.py migrate
-   python manage.py loaddata initial_data.json
+   # (db.sqlite3 ya está incluido y poblado)
    python manage.py runserver
-5) Iniciar frontend (en otra terminal dentro del workspace raíz):
-   cd frontend
-   python -m frontend
-6) Comprobar backups: revisa frontend/backups/*.json (se crean automáticamente según INTERVALO_BACKUP_SEG en frontend/config.json)
 
-Notas importantes:
-- El frontend usa tkinter y realiza validaciones de formulario (según PDF: validaciones en UI).
-- El backend expone endpoints REST para CRUD sin lógica de negocio compleja.
-- Para la sustentación, muestra los 5 registros pre-cargados en la base de datos (backend/initial_data.json).
+4) Ejecutar frontend (desde la raíz del ZIP):
+   python -m frontend.main
+
+Notas:
+- El archivo db.sqlite3 ya está pre-cargado en backend/
+- Las copias de seguridad automáticas se guardan en frontend/backups/backup.json
+- No se usan llaves foráneas: Prestamo referencia herramientas por 'herramienta_codigo'

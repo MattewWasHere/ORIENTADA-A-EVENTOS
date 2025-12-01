@@ -1,0 +1,187 @@
+{
+  "herramientas": [
+    {
+      "id": 1,
+      "codigo": "H001",
+      "nombre": "Taladro Inalambrico",
+      "descripcion": "Taladro de 18V",
+      "cantidad": 5,
+      "ubicacion": "Bodega A",
+      "estado": "prestada",
+      "created_at": "2025-12-01T02:37:57Z"
+    },
+    {
+      "id": 2,
+      "codigo": "H002",
+      "nombre": "Martillo",
+      "descripcion": "Martillo de acero",
+      "cantidad": 10,
+      "ubicacion": "Bodega B",
+      "estado": "disponible",
+      "created_at": "2025-12-01T02:37:57Z"
+    },
+    {
+      "id": 3,
+      "codigo": "H003",
+      "nombre": "Sierra Circular",
+      "descripcion": "Sierra circular 7\"",
+      "cantidad": 3,
+      "ubicacion": "Bodega A",
+      "estado": "disponible",
+      "created_at": "2025-12-01T02:37:57Z"
+    },
+    {
+      "id": 4,
+      "codigo": "H004",
+      "nombre": "Llave Inglesa",
+      "descripcion": "Llave inglesa 12\"",
+      "cantidad": 7,
+      "ubicacion": "Bodega C",
+      "estado": "disponible",
+      "created_at": "2025-12-01T02:37:57Z"
+    },
+    {
+      "id": 5,
+      "codigo": "H005",
+      "nombre": "Destornillador",
+      "descripcion": "Set destornilladores",
+      "cantidad": 12,
+      "ubicacion": "Bodega B",
+      "estado": "disponible",
+      "created_at": "2025-12-01T02:37:57Z"
+    },
+    {
+      "id": 6,
+      "codigo": "H022",
+      "nombre": "Portatil",
+      "descripcion": "Pc Portatil",
+      "cantidad": 19,
+      "ubicacion": "Bodega H",
+      "estado": "disponible",
+      "created_at": "2025-12-01T02:58:26.479100Z"
+    },
+    {
+      "id": 7,
+      "codigo": "H023",
+      "nombre": "Cargador",
+      "descripcion": "Cargador de portatil",
+      "cantidad": 19,
+      "ubicacion": "Bodega U",
+      "estado": "disponible",
+      "created_at": "2025-12-01T03:23:26.456005Z"
+    }
+  ],
+  "prestamos": [
+    {
+      "id": 1,
+      "herramienta_codigo": "H001",
+      "persona_entrega": "Carlos",
+      "persona_recibe": "Ana",
+      "fecha_entrega": "2025-11-01T09:00:00Z",
+      "fecha_prevista": "2025-11-10T09:00:00Z",
+      "fecha_devolucion": "2025-11-30T00:00:00Z",
+      "estado": "cerrado",
+      "created_at": "2025-12-01T02:37:57Z"
+    },
+    {
+      "id": 2,
+      "herramienta_codigo": "H002",
+      "persona_entrega": "Luis",
+      "persona_recibe": "Pedro",
+      "fecha_entrega": "2025-10-20T10:00:00Z",
+      "fecha_prevista": "2025-10-22T10:00:00Z",
+      "fecha_devolucion": "2025-10-22T09:00:00Z",
+      "estado": "cerrado",
+      "created_at": "2025-12-01T02:37:57Z"
+    },
+    {
+      "id": 3,
+      "herramienta_codigo": "H003",
+      "persona_entrega": "Maria",
+      "persona_recibe": "Jose",
+      "fecha_entrega": "2025-11-05T11:00:00Z",
+      "fecha_prevista": "2025-11-12T11:00:00Z",
+      "fecha_devolucion": "2025-11-30T00:00:00Z",
+      "estado": "cerrado",
+      "created_at": "2025-12-01T02:37:57Z"
+    },
+    {
+      "id": 4,
+      "herramienta_codigo": "H004",
+      "persona_entrega": "Sofia",
+      "persona_recibe": "Miguel",
+      "fecha_entrega": "2025-09-15T08:30:00Z",
+      "fecha_prevista": "2025-09-20T08:30:00Z",
+      "fecha_devolucion": "2025-09-20T08:15:00Z",
+      "estado": "cerrado",
+      "created_at": "2025-12-01T02:37:57Z"
+    },
+    {
+      "id": 5,
+      "herramienta_codigo": "H005",
+      "persona_entrega": "Andres",
+      "persona_recibe": "Laura",
+      "fecha_entrega": "2025-11-10T14:00:00Z",
+      "fecha_prevista": "2025-11-15T14:00:00Z",
+      "fecha_devolucion": null,
+      "estado": "activo",
+      "created_at": "2025-12-01T02:37:57Z"
+    },
+    {
+      "id": 6,
+      "herramienta_codigo": "H001",
+      "persona_entrega": "Carlos",
+      "persona_recibe": "Ana",
+      "fecha_entrega": "2025-10-31T00:00:00Z",
+      "fecha_prevista": "2025-11-21T00:00:00Z",
+      "fecha_devolucion": null,
+      "estado": "activo",
+      "created_at": "2025-12-01T02:51:09.763811Z"
+    },
+    {
+      "id": 7,
+      "herramienta_codigo": "H022",
+      "persona_entrega": "amadeo",
+      "persona_recibe": "Miguel",
+      "fecha_entrega": "2025-11-12T00:00:00Z",
+      "fecha_prevista": "2025-11-28T00:00:00Z",
+      "fecha_devolucion": "2025-11-30T00:00:00Z",
+      "estado": "cerrado",
+      "created_at": "2025-12-01T02:58:48.351319Z"
+    },
+    {
+      "id": 8,
+      "herramienta_codigo": "H001",
+      "persona_entrega": "Carlos",
+      "persona_recibe": "Ana",
+      "fecha_entrega": "2025-11-01T00:00:00Z",
+      "fecha_prevista": "2025-11-10T00:00:00Z",
+      "fecha_devolucion": null,
+      "estado": "activo",
+      "created_at": "2025-12-01T03:22:06.742577Z"
+    },
+    {
+      "id": 9,
+      "herramienta_codigo": "H023",
+      "persona_entrega": "Juanchito",
+      "persona_recibe": "Miguel",
+      "fecha_entrega": "2025-11-19T22:23:00Z",
+      "fecha_prevista": "2025-11-27T22:23:00Z",
+      "fecha_devolucion": "2025-11-30T00:00:00Z",
+      "estado": "cerrado",
+      "created_at": "2025-12-01T03:23:53.861632Z"
+    },
+    {
+      "id": 10,
+      "herramienta_codigo": "H023",
+      "persona_entrega": "Juanchito",
+      "persona_recibe": "Miguel",
+      "fecha_entrega": "2025-11-19T00:00:00Z",
+      "fecha_prevista": "2025-11-27T00:00:00Z",
+      "fecha_devolucion": null,
+      "estado": "activo",
+      "created_at": "2025-12-01T03:24:05.442532Z"
+    }
+  ],
+  "ts": "2025-12-01T03:24:36.254621Z"
+}
