@@ -1,7 +1,12 @@
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 
-from rest_framework import routers
-from .views import HerramientaViewSet, PrestamoViewSet
-router = routers.DefaultRouter()
-router.register(r'herramientas', HerramientaViewSet, basename='herramienta')
-router.register(r'prestamos', PrestamoViewSet, basename='prestamo')
-urlpatterns = router.urls
+from api.views import HerramientaViewSet, PrestamoViewSet
+
+router = DefaultRouter()
+router.register("herramientas", HerramientaViewSet, basename="herramienta")
+router.register("prestamos", PrestamoViewSet, basename="prestamo")
+
+urlpatterns = [
+    path("", include(router.urls))
+]

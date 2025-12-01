@@ -1,7 +1,7 @@
 import os
 import requests
 
-API_URL = os.getenv('API_URL', 'http://127.0.0.1:8000/api')
+API_URL = os.getenv("API_URL", "http://127.0.0.1:8000/api")
 TIMEOUT = 6
 
 
@@ -33,15 +33,36 @@ def get_prestamos():
     r.raise_for_status()
     return r.json()
 
-
 def create_prestamo(data):
-    r = requests.post(f"{API_URL}/prestamos/", json=data, timeout=TIMEOUT)
+    import json
+    print("\n\n========== DEBUG CREAR PRESTAMO ==========")
+    print("DATA ENVIADA:")
+    print(json.dumps(data, indent=2))
+
+    url = f"{API_URL}/prestamos/"
+    print("URL:", url)
+
+    r = requests.post(url, json=data)
+
+    print("STATUS CODE:", r.status_code)
+    print("RESPUESTA BACKEND:")
+    try:
+        print(r.json())
+    except:
+        print(r.text)
+
+    print("==========================================\n\n")
+
     r.raise_for_status()
     return r.json()
 
 
-# 🔥 CAMBIO IMPORTANTE: PUT → PATCH
+
+
+
+
 def update_prestamo(pid, data):
+    # Use PATCH to allow partial updates (fecha_devolucion solo)
     r = requests.patch(f"{API_URL}/prestamos/{pid}/", json=data, timeout=TIMEOUT)
     r.raise_for_status()
     return r.json()

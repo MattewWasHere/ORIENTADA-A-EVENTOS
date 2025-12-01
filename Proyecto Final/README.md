@@ -14,7 +14,8 @@ INSTRUCCIONES RÁPIDAS:
 3) Ejecutar backend:
    cd backend
    python manage.py migrate
-   # (db.sqlite3 ya está incluido y poblado)
+   python manage.py loaddata initial_data.json
+
    python manage.py runserver
 
 4) Ejecutar frontend (desde la raíz del ZIP):

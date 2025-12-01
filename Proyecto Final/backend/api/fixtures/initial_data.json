@@ -4,12 +4,12 @@
     "pk": 1,
     "fields": {
       "codigo": "H001",
-      "nombre": "Taladro Inalambrico",
-      "descripcion": "Taladro de 18V",
-      "cantidad": 5,
+      "nombre": "Taladro",
+      "tipo": "Eléctrica",
       "ubicacion": "Bodega A",
       "estado": "disponible",
-      "created_at": "2025-12-01T02:37:57Z"
+      "created_at": "2025-11-01T10:00:00Z",
+      "updated_at": "2025-11-01T10:00:00Z"
     }
   },
   {
@@ -18,11 +18,11 @@
     "fields": {
       "codigo": "H002",
       "nombre": "Martillo",
-      "descripcion": "Martillo de acero",
-      "cantidad": 10,
+      "tipo": "Manual",
       "ubicacion": "Bodega B",
       "estado": "disponible",
-      "created_at": "2025-12-01T02:37:57Z"
+      "created_at": "2025-11-01T10:05:00Z",
+      "updated_at": "2025-11-01T10:05:00Z"
     }
   },
   {
@@ -30,12 +30,12 @@
     "pk": 3,
     "fields": {
       "codigo": "H003",
-      "nombre": "Sierra Circular",
-      "descripcion": "Sierra circular 7\"",
-      "cantidad": 3,
-      "ubicacion": "Bodega A",
-      "estado": "disponible",
-      "created_at": "2025-12-01T02:37:57Z"
+      "nombre": "Sierra",
+      "tipo": "Corte",
+      "ubicacion": "Taller",
+      "estado": "prestada",
+      "created_at": "2025-11-02T09:30:00Z",
+      "updated_at": "2025-11-02T09:30:00Z"
     }
   },
   {
@@ -43,12 +43,12 @@
     "pk": 4,
     "fields": {
       "codigo": "H004",
-      "nombre": "Llave Inglesa",
-      "descripcion": "Llave inglesa 12\"",
-      "cantidad": 7,
+      "nombre": "Llave inglesa",
+      "tipo": "Manual",
       "ubicacion": "Bodega C",
       "estado": "disponible",
-      "created_at": "2025-12-01T02:37:57Z"
+      "created_at": "2025-11-03T15:20:00Z",
+      "updated_at": "2025-11-03T15:20:00Z"
     }
   },
   {
@@ -56,82 +56,97 @@
     "pk": 5,
     "fields": {
       "codigo": "H005",
-      "nombre": "Destornillador",
-      "descripcion": "Set destornilladores",
-      "cantidad": 12,
-      "ubicacion": "Bodega B",
+      "nombre": "Pulidora",
+      "tipo": "Eléctrica",
+      "ubicacion": "Taller",
       "estado": "disponible",
-      "created_at": "2025-12-01T02:37:57Z"
+      "created_at": "2025-11-05T11:15:00Z",
+      "updated_at": "2025-11-05T11:15:00Z"
     }
   },
   {
     "model": "api.prestamo",
     "pk": 1,
     "fields": {
-      "herramienta_codigo": "H001",
-      "persona_entrega": "Carlos",
+      "herramienta_codigo": "H003",
+      "responsable": "Ana",
+      "persona_entrega": "Jhon",
       "persona_recibe": "Ana",
-      "fecha_entrega": "2025-11-01T09:00:00Z",
-      "fecha_prevista": "2025-11-10T09:00:00Z",
+      "fecha_salida": "2025-11-29",
+      "fecha_prevista": "2025-12-05",
+      "fecha_entrega": null,
       "fecha_devolucion": null,
       "estado": "activo",
-      "created_at": "2025-12-01T02:37:57Z"
+      "created_at": "2025-11-29T08:00:00Z",
+      "updated_at": "2025-11-29T08:00:00Z"
     }
   },
   {
     "model": "api.prestamo",
     "pk": 2,
     "fields": {
-      "herramienta_codigo": "H002",
+      "herramienta_codigo": "H001",
+      "responsable": "Luis",
       "persona_entrega": "Luis",
-      "persona_recibe": "Pedro",
-      "fecha_entrega": "2025-10-20T10:00:00Z",
-      "fecha_prevista": "2025-10-22T10:00:00Z",
-      "fecha_devolucion": "2025-10-22T09:00:00Z",
-      "estado": "cerrado",
-      "created_at": "2025-12-01T02:37:57Z"
+      "persona_recibe": "Luis",
+      "fecha_salida": "2025-11-20",
+      "fecha_prevista": "2025-11-27",
+      "fecha_entrega": null,
+      "fecha_devolucion": null,
+      "estado": "activo",
+      "created_at": "2025-11-20T09:15:00Z",
+      "updated_at": "2025-11-20T09:15:00Z"
     }
   },
   {
     "model": "api.prestamo",
     "pk": 3,
     "fields": {
-      "herramienta_codigo": "H003",
-      "persona_entrega": "Maria",
-      "persona_recibe": "Jose",
-      "fecha_entrega": "2025-11-05T11:00:00Z",
-      "fecha_prevista": "2025-11-12T11:00:00Z",
+      "herramienta_codigo": "H002",
+      "responsable": "Carlos",
+      "persona_entrega": "Carlos",
+      "persona_recibe": "Carlos",
+      "fecha_salida": "2025-11-18",
+      "fecha_prevista": "2025-11-25",
+      "fecha_entrega": null,
       "fecha_devolucion": null,
       "estado": "activo",
-      "created_at": "2025-12-01T02:37:57Z"
+      "created_at": "2025-11-18T14:45:00Z",
+      "updated_at": "2025-11-18T14:45:00Z"
     }
   },
   {
     "model": "api.prestamo",
     "pk": 4,
     "fields": {
-      "herramienta_codigo": "H004",
-      "persona_entrega": "Sofia",
-      "persona_recibe": "Miguel",
-      "fecha_entrega": "2025-09-15T08:30:00Z",
-      "fecha_prevista": "2025-09-20T08:30:00Z",
-      "fecha_devolucion": "2025-09-20T08:15:00Z",
-      "estado": "cerrado",
-      "created_at": "2025-12-01T02:37:57Z"
+      "herramienta_codigo": "H005",
+      "responsable": "Mateo",
+      "persona_entrega": "Mateo",
+      "persona_recibe": "Mateo",
+      "fecha_salida": "2025-11-25",
+      "fecha_prevista": "2025-12-02",
+      "fecha_entrega": null,
+      "fecha_devolucion": null,
+      "estado": "activo",
+      "created_at": "2025-11-25T12:10:00Z",
+      "updated_at": "2025-11-25T12:10:00Z"
     }
   },
   {
     "model": "api.prestamo",
     "pk": 5,
     "fields": {
-      "herramienta_codigo": "H005",
-      "persona_entrega": "Andres",
-      "persona_recibe": "Laura",
-      "fecha_entrega": "2025-11-10T14:00:00Z",
-      "fecha_prevista": "2025-11-15T14:00:00Z",
+      "herramienta_codigo": "H004",
+      "responsable": "Sofía",
+      "persona_entrega": "Sofía",
+      "persona_recibe": "Sofía",
+      "fecha_salida": "2025-11-10",
+      "fecha_prevista": "2025-11-17",
+      "fecha_entrega": null,
       "fecha_devolucion": null,
       "estado": "activo",
-      "created_at": "2025-12-01T02:37:57Z"
+      "created_at": "2025-11-10T16:00:00Z",
+      "updated_at": "2025-11-10T16:00:00Z"
     }
   }
 ]
