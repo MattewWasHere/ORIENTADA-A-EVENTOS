@@ -24,3 +24,17 @@ Notas:
 - El archivo db.sqlite3 ya está pre-cargado en backend/
 - Las copias de seguridad automáticas se guardan en frontend/backups/backup.json
 - No se usan llaves foráneas: Prestamo referencia herramientas por 'herramienta_codigo'
+
+
+
+##  Autores
+- Jhon Sebastian Bermúdez  
+- Anyelo Jader Ladino
+
+---
+
+##  Requisitos
+- Python 3.10 o superior  
+- pip  
+- Git  
+- Entorno virtual (recomendado)
