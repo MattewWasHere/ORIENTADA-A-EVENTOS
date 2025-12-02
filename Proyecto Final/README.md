@@ -1,161 +1,157 @@
+IHEP – Sistema de Herramientas y Préstamos
+Proyecto Final – Backend (Django) + Frontend (Tkinter)
 
-INSTRUCCIONES RÁPIDAS:
+Este proyecto implementa un sistema completo para la gestión de herramientas, registro de préstamos, devoluciones, inventario y copias de seguridad automáticas. Incluye un backend en Django (API REST) y un frontend en Tkinter.
 
-📦 IHEP – Sistema de Herramientas y Préstamos
-Proyecto Final – Gestión de Herramientas, Préstamos y Respaldos Automáticos
-
-Este proyecto implementa un sistema completo para la gestión de herramientas, registro de préstamos, devoluciones, inventario y copias de seguridad automáticas.
-Incluye backend en Django (API REST) y frontend en Tkinter, con respaldo automático cada 60 segundos.
-
-📁 Estructura General
+1. Estructura del Proyecto
+##
 Proyecto Final/
-│── backend/          # API REST en Django
-│   ├── api/          # Modelos, views, serializers, URLs
-│   ├── db.sqlite3    # Base de datos precargada
-│   └── manage.py
+│── backend/
+│   ├── api/                     # API REST (views, serializers, URLs)
+│   ├── db.sqlite3               # Base de datos precargada
+│   ├── manage.py
 │
 │── frontend/
-│   ├── vista/        # Interfaz gráfica Tkinter
-│   ├── modelos/      # Conexión al backend
-│   ├── controladores/# Lógica de respaldo
-│   └── backups/      # Respaldos automáticos
+│   ├── vista/                   # Interfaz gráfica Tkinter
+│   ├── modelos/                 # Conexión con el backend
+│   ├── controladores/           # Lógica de respaldo
+│   ├── backups/                 # Respaldos automáticos JSON
 │
-│── initial_data.json # Datos iniciales (fixtures)
-│── README.md         # Documento actual
+│── initial_data.json            # Datos iniciales (fixtures)
+│── README.md
+##
+3. Requisitos
 
-🚀 Instalación y Ejecución del Proyecto
-1️. Crear y activar entorno virtual
-Windows
+Python 3.10 o superior
+
+pip
+
+Git
+
+Entorno virtual (opcional pero recomendado)
+
+Dependencias:
+
+django
+djangorestframework
+requests
+tkcalendar
+
+3. Instalación del Proyecto
+3.1 Crear y activar entorno virtual
+
+Windows:
+
 python -m venv .venv
 .venv\Scripts\activate
 
-Linux / Mac
+
+Linux / Mac:
+
 python3 -m venv .venv
 source .venv/bin/activate
 
-2️. Instalar dependencias
+4. Instalar dependencias
 pip install django djangorestframework requests tkcalendar
 
-3️. Iniciar el Backend (API Django)
+5. Ejecutar el Backend
 
-4: Ir a la carpeta del backend:
+Entrar al backend:
 
 cd backend
 
 
-5: Ejecutar migraciones:
+Aplicar migraciones:
 
 python manage.py migrate
 
 
-6: Cargar los datos iniciales:
+Cargar datos iniciales:
 
 python manage.py loaddata initial_data.json
 
 
-7: Iniciar servidor backend:
+Iniciar el servidor:
 
 python manage.py runserver
 
 
-📌 El backend queda activo en:
-  http://127.0.0.1:8000/api/
+API disponible en:
+http://127.0.0.1:8000/api/
 
- 8: Ejecutar el Frontend (Interfaz Gráfica)
+6. Ejecutar el Frontend
 
 Desde la raíz del proyecto:
 
 python -m frontend.main
 
-🖥️ Funcionalidades del Sistema
-🔧 Gestión de Herramientas
+7. Funcionalidades del Sistema
+7.1 Herramientas
 
-✔ Agregar herramientas
-✔ Editar campo por campo
-✔ Eliminar herramientas
-✔ Actualización de estado (“disponible” / “prestada”)
-✔ Campos soportados:
+Crear, editar y eliminar herramientas.
 
-Código
+Cambios automáticos de estado.
 
-Nombre
+Campos: código, nombre, tipo, ubicación, estado.
 
-Tipo
+7.2 Préstamos
 
-Ubicación
+Registrar préstamos.
 
-Estado
+Validación de estado “disponible”.
 
-📚 Gestión de Préstamos
+Registrar devoluciones.
 
-✔ Registrar un préstamo
-✔ Validación: solo permite prestar herramientas disponibles
-✔ Registrar devolución
-✔ Cambiar automáticamente el estado de la herramienta
+Cambio automático de estado de herramienta.
 
-🔍 Búsqueda Inteligente
+7.3 Buscador
 
-✔ Buscar por:
+Búsqueda por código, nombre o estado.
 
-Código
+Resultados en tabla filtrada.
 
-Nombre
+7.4 Respaldo Automático
 
-Estado
-✔ Tabla filtrada en tiempo real
+Se genera un backup cada 60 segundos.
 
-💾 Sistema de Respaldo Automático
-
-Una copia de seguridad se genera cada 60 segundos en:
+Ubicación:
 
 frontend/backups/
 
 
-El archivo generado incluye:
+El respaldo incluye:
 
-Todas las herramientas
+Herramientas
 
-Todos los préstamos
+Préstamos
 
-Fecha del respaldo
+Marca de tiempo
 
-🛠️ Tecnologías Utilizadas
-Backend
+8. Diseño sin Llaves Foráneas
 
-Django 5+
+Según requisitos del proyecto, no se usan llaves foráneas.
+Los préstamos referencian herramientas mediante:
 
-Django REST Framework
+herramienta_codigo
 
-SQLite
+9. Base de Datos Incluida
 
-Frontend
+db.sqlite3 contiene:
 
-Tkinter
+Herramientas de prueba
 
-ttk Theme (estilo profesional)
+Préstamos de prueba
 
-tkcalendar (selector de fechas)
+Si deseas recargar los datos iniciales:
 
-Otros
+python manage.py loaddata initial_data.json
 
-Requests (consumo de API)
+10. Autores
 
-JSON backups automáticos
+Jhon Sebastian Bermúdez
 
-📌 Notas Importantes
+Anyelo Jader Ladino
 
-No se usan llaves foráneas:
-El modelo Prestamo referencia herramientas usando el campo herramienta_codigo.
+11. Licencia
 
-La base de datos incluida (db.sqlite3) ya tiene datos de prueba.
-
-Compatible con Python 3.10+.
-
-👥 Autores
-Nombre	Rol
-Jhon Sebastian Bermúdez	Desarrollo Backend & API
-Anyelo Jader Ladino	Desarrollo Frontend & Lógica
-(Asistencia Técnica) ChatGPT	Correcciones & Diagnóstico
-📄 Licencia
-
-Proyecto académico — uso educativo.
+Proyecto académico para fines educativos.
