@@ -1,9 +1,14 @@
 IHEP - Sistema de Herramientas y Préstamos. Proyecto Final (Backend Django + Frontend Tkinter).
-........................................
+##
+
+##
 Descripción.
 Este proyecto implementa un sistema para gestionar herramientas y préstamos. Incluye un backend REST en Django y un frontend de escritorio con Tkinter. Tiene respaldo automático (JSON) y carga de datos precargados (fixtures / db.sqlite3). No usa llaves foráneas; las relaciones se manejan por código (ej.: 'herramienta_codigo' en préstamos).
-........................................
+##
+
+##
 Estructura principal de carpetas y archivos (rutas relativas dentro del ZIP).
+##
 backend/. (proyecto Django)
 backend/api/ (app con models, views, serializers, urls, admin)
 backend/manage.py
@@ -15,16 +20,22 @@ frontend/modelos/ (adaptadores hacia la API REST)
 frontend/controladores/ (backup, api_client, lógica)
 frontend/backups/ (respaldos automáticos JSON)
 README.md (este archivo)
-........................................
+##
+
+##
 Requisitos mínimos.
+##
 Python 3.10 o superior  
 pip  
 Git  
 Entorno virtual recomendado (.venv)
 
+##
 Dependencias principales:  
+##
 django, djangorestframework, requests, tkcalendar
-........................................
+
+##
 Instalación y puesta en marcha (Windows).
 1) Crear y activar entorno virtual desde la raíz del proyecto:
    python -m venv .venv
@@ -42,7 +53,10 @@ Instalación y puesta en marcha (Windows).
 
 4) Ejecutar frontend (desde la raíz del proyecto):
    python -m frontend.main
-........................................
+   ##
+
+
+##
 Notas útiles de ejecución.
 - Si el comando `loaddata` falla, revisa las fechas y los campos del modelo.  
 - Si cambiaste modelos, ejecuta:
@@ -67,7 +81,9 @@ Funcionamiento general de la interfaz.
 - Respaldo automático:
   Guarda un backup JSON cada 60 segundos en:
      frontend/backups/
-........................................
+##
+
+##
 Rutas REST del backend.
 GET    /api/herramientas/  
 POST   /api/herramientas/  
@@ -78,7 +94,9 @@ GET    /api/prestamos/
 POST   /api/prestamos/  
 PUT    /api/prestamos/{id}/  
 DELETE /api/prestamos/{id}/  
-........................................
+##
+
+##
 Precargado de datos.
 - Puedes usar la base de datos incluida (db.sqlite3).  
 - Si quieres regenerar desde cero:
@@ -86,21 +104,25 @@ Precargado de datos.
       python manage.py loaddata api/fixtures/initial_data.json
 
 El fixture debe usar campos correctos y formato de fecha YYYY-MM-DD.
-........................................
+##
+
+
+##
 Depuración rápida.
 - Error 400 → falta un campo en el POST/PUT.  
 - Error 500 → revisar consola del runserver.  
 - Error al editar ubicación → revisar serializer permita escritura.  
 - Error de conexión → backend apagado.  
-........................................
+##
+
+##
 Autores.
 Jhon Sebastian Bermúdez  
 Anyelo Jader Ladino  
-........................................
-Licencia y nota final.
-Proyecto académico para entrega final. Uso local.  
-No apto para producción sin configuraciones adicionales.
-........................................
+##
+
+
+##
 Pasos ultra rápidos.
 1) python -m venv .venv
 2) .venv\Scripts\activate
@@ -110,7 +132,8 @@ Pasos ultra rápidos.
 6) python manage.py loaddata api/fixtures/initial_data.json
 7) python manage.py runserver
 8) python -m frontend.main
-........................................
-Fin del README.
+##
+
+JhoonyWasHere 
 
 
