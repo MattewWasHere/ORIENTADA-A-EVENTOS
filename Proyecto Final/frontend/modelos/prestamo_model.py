@@ -1,10 +1,4 @@
-from frontend.controladores.api_client import (
-    get_prestamos,
-    create_prestamo,
-    update_prestamo,
-    delete_prestamo,
-)
-
+from frontend.controladores.api_client import get_prestamos, create_prestamo, update_prestamo, delete_prestamo
 
 class PrestamoModel:
     def listar(self):

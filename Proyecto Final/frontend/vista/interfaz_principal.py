@@ -1,104 +1,120 @@
 # frontend/vista/interfaz_principal.py
+"""
+Interfaz principal corregida y optimizada.
+
+Características principales:
+- Hilos para llamadas a la API (no bloquea UI)
+- Backup en hilo con intervalo configurable por INTERVALO_BACKUP_SEG (env)
+- Contador de respaldo bonito (muestra próxima ejecución / hora último respaldo)
+- Animación suave: pulso en etiqueta de respaldo y entrada suave de tablas
+- Botones de limpiar campos en pestañas Herramientas y Préstamos
+- Manejo flexible de nombres de método de BackupController (ejecutar_backup / hacer_backup)
+- Manejo de errores con mensajes al usuario
+"""
+
+import os
 import threading
 import time
 import datetime
 import tkinter as tk
 from tkinter import ttk, messagebox
 from tkcalendar import DateEntry
+from queue import Queue, Empty
 
-# Importa los modelos/frontend controllers (deben existir)
+# Models / controllers (deben existir)
 from frontend.modelos.herramienta_model import HerramientaModel
 from frontend.modelos.prestamo_model import PrestamoModel
 from frontend.controladores.backup import BackupController
 
+# intervalo backup configurable por env var (segundos)
+try:
+    INTERVALO_BACKUP_SEG = int(os.getenv("INTERVALO_BACKUP_SEG", "300"))
+except Exception:
+    INTERVALO_BACKUP_SEG = 300
+
 
 class InterfazPrincipal(tk.Tk):
-    """
-    Interfaz principal estilo oscuro (Theme C).
-    Requisitos: frontend.modelos.herramienta_model HerramientaModel
-                frontend.modelos.prestamo_model PrestamoModel
-                frontend.controladores.backup BackupController (ejecutar_backup o hacer_backup)
-    """
-
-    BACKUP_INTERVAL = 300  # segundos (5 minutos)
+    """Interfaz principal optimizada y con animaciones suaves."""
 
     def __init__(self):
         super().__init__()
-        self.title("IHEP — Inventario y Préstamos (Oscuro)")
+        self.title("IHEP — Inventario y Préstamos")
         self.geometry("1200x760")
-        self.configure(bg="#0f0f12")
+        self.configure(bg="#efefef")
 
-        # modelos
+        # --- modelos y controladores ---
         self.herr_model = HerramientaModel()
         self.pres_model = PrestamoModel()
-
-        # backup controller (compatibilidad con métodos ejecutar_backup / hacer_backup)
         self.backup_ctrl = BackupController(self.herr_model, self.pres_model)
 
-        # estado del hilo
+        # cola para comunicar resultados de hilos a UI
+        self._q = Queue()
+
+        # flags / sincronización
+        self._list_lock = threading.Lock()
         self._stop_event = threading.Event()
-        self._next_backup_seconds = self.BACKUP_INTERVAL
-        self._last_backup_path = None
 
-        # estilos
+        # estado de backup
+        self._last_backup_time = None
+        self._next_backup_seconds = INTERVALO_BACKUP_SEG
+
+        # estilos y widgets
         self._setup_styles()
-
-        # construir UI
         self._build_ui()
 
-        # iniciar hilo de backup
-        threading.Thread(target=self._backup_loop, daemon=True).start()
+        # iniciar hilo de backups (daemon)
+        self._backup_thread = threading.Thread(target=self._backup_loop, daemon=True)
+        self._backup_thread.start()
 
-        # cargar datos tras iniciar
-        self.after(300, self._listar_herramientas)
-        self.after(300, self._listar_prestamos)
+        # cargar datos (en hilo)
+        self._debounce_timer = None
+        self._load_all_async()
 
-    # -----------------------
-    # estilos / tema oscuro
-    # -----------------------
+        # procesar cola periódicamente
+        self.after(100, self._process_queue)
+
+    # ----------------------
+    # estilos
+    # ----------------------
     def _setup_styles(self):
         style = ttk.Style(self)
-        # For Windows, 'clam' works reasonably well
         try:
             style.theme_use("clam")
         except Exception:
             pass
 
-        # General widget colors
-        style.configure("TFrame", background="#0f0f12")
-        style.configure("TLabel", background="#0f0f12", foreground="#e6e6e6", font=("Segoe UI", 10))
-        style.configure("Header.TLabel", font=("Segoe UI", 12, "bold"), foreground="#ffffff", background="#0f0f12")
-        style.configure("TButton", background="#1f2933", foreground="#e6e6e6", font=("Segoe UI", 10, "bold"),
-                        padding=6)
-        style.map("TButton", background=[("active", "#2b3340")])
+        # generales
+        style.configure("TFrame", background="#efefef")
+        style.configure("Header.TLabel", background="#efefef", font=("Segoe UI", 13, "bold"))
+        style.configure("Sub.TLabel", background="#efefef", font=("Segoe UI", 10))
+        style.configure("Accent.TButton", font=("Segoe UI", 10, "bold"), padding=6)
+        style.configure("Small.TButton", font=("Segoe UI", 9), padding=4)
 
-        style.configure("Treeview", background="#101216", fieldbackground="#101216", foreground="#e6e6e6",
-                        rowheight=28, font=("Segoe UI", 10))
-        style.configure("Treeview.Heading", font=("Segoe UI", 10, "bold"), foreground="#ffffff")
+        # Treeview look
+        style.configure("Treeview", rowheight=26, font=("Segoe UI", 10))
+        style.configure("Treeview.Heading", font=("Segoe UI", 10, "bold"))
 
-        # Smaller entry style fallback
-        style.configure("TEntry", fieldbackground="#1a1a1a", foreground="#e6e6e6")
-
-    # -----------------------
-    # UI build
-    # -----------------------
+    # ----------------------
+    # UI construction
+    # ----------------------
     def _build_ui(self):
-        # Encabezado
+        # header
         header = ttk.Frame(self)
-        header.pack(fill="x", padx=12, pady=(12, 6))
-        ttk.Label(header, text="IHEP — INVENTARIO & PRÉSTAMOS", style="Header.TLabel").pack(side="left")
+        header.pack(fill="x", padx=12, pady=(12, 4))
+        ttk.Label(header, text="IHEP — Inventario & Préstamos", style="Header.TLabel").pack(
+            side="left", padx=(4, 0)
+        )
 
-        # Backup status / contador
-        self.lbl_backup = ttk.Label(header, text="Respaldo: —", style="TLabel")
-        self.lbl_backup.pack(side="right", padx=(0, 10))
-        self.lbl_counter = ttk.Label(header, text="", style="TLabel")
-        self.lbl_counter.pack(side="right", padx=(0, 8))
+        # backup status (no mostrar path crudo)
+        self.lbl_backup = ttk.Label(header, text="Último respaldo: —", style="Sub.TLabel")
+        self.lbl_backup.pack(side="right", padx=(0, 6))
+        self.lbl_next = ttk.Label(header, text="", style="Sub.TLabel")
+        self.lbl_next.pack(side="right", padx=(0, 10))
 
-        # Notebook
+        # notebook
         nb = ttk.Notebook(self)
         nb.pack(fill="both", expand=True, padx=12, pady=8)
 
-        # tabs
         self.tab_herr = ttk.Frame(nb)
         self.tab_pres = ttk.Frame(nb)
         self.tab_busq = ttk.Frame(nb)
@@ -107,47 +123,56 @@ class InterfazPrincipal(tk.Tk):
         nb.add(self.tab_pres, text="Préstamos")
         nb.add(self.tab_busq, text="Búsqueda")
 
-        self._build_herramientas_tab()
-        self._build_prestamos_tab()
-        self._build_busqueda_tab()
+        self._build_herr_tab()
+        self._build_pres_tab()
+        self._build_busq_tab()
 
-    # -----------------------
+    # ----------------------
     # Herramientas tab
-    # -----------------------
-    def _build_herramientas_tab(self):
-        frm_top = ttk.Frame(self.tab_herr)
-        frm_top.pack(fill="x", padx=8, pady=8)
+    # ----------------------
+    def _build_herr_tab(self):
+        frm = ttk.Frame(self.tab_herr)
+        frm.pack(fill="x", padx=8, pady=8)
 
-        campos = ["Código", "Nombre", "Tipo", "Ubicación", "Estado"]
-        self.h_vars = {c: tk.StringVar() for c in campos}
+        labels = ["Código", "Nombre", "Tipo", "Ubicación", "Estado"]
+        self.h_vars = {l: tk.StringVar() for l in labels}
 
-        for i, c in enumerate(campos):
-            ttk.Label(frm_top, text=c).grid(row=i, column=0, sticky="e", padx=6, pady=4)
-            ttk.Entry(frm_top, textvariable=self.h_vars[c], width=40).grid(row=i, column=1, sticky="w", padx=6)
+        for i, label in enumerate(labels):
+            ttk.Label(frm, text=label).grid(row=i, column=0, sticky="e", padx=6, pady=4)
+            ttk.Entry(frm, textvariable=self.h_vars[label], width=40).grid(row=i, column=1, sticky="w")
 
-        btn_guardar = ttk.Button(frm_top, text="Guardar", command=self._guardar_herramienta)
-        btn_eliminar = ttk.Button(frm_top, text="Eliminar", command=self._eliminar_herramienta)
-        btn_listar = ttk.Button(frm_top, text="Listar", command=self._listar_herramientas)
+        btn_frame = ttk.Frame(frm)
+        btn_frame.grid(row=len(labels), column=1, pady=8, sticky="w")
+        ttk.Button(btn_frame, text="Guardar", style="Accent.TButton", command=self._guardar_herr).pack(
+            side="left", padx=4
+        )
+        ttk.Button(btn_frame, text="Eliminar", style="Small.TButton", command=self._eliminar_herr).pack(
+            side="left", padx=4
+        )
+        ttk.Button(btn_frame, text="Limpiar", style="Small.TButton", command=self._limpiar_herr).pack(
+            side="left", padx=4
+        )
+        ttk.Button(btn_frame, text="Listar", style="Small.TButton", command=self._load_herramientas_async).pack(
+            side="left", padx=4
+        )
 
-        btn_guardar.grid(row=6, column=0, pady=10)
-        btn_eliminar.grid(row=6, column=1, sticky="w", padx=6)
-        btn_listar.grid(row=6, column=1, sticky="e", padx=6)
-
-        # Treeview herramientas
+        # Treeview
         cols = ("codigo", "nombre", "tipo", "ubicacion", "estado", "created_at")
         self.tree_h = ttk.Treeview(self.tab_herr, columns=cols, show="headings", selectmode="browse")
         for c in cols:
             self.tree_h.heading(c, text=c.replace("_", " ").capitalize())
             self.tree_h.column(c, width=150 if c != "created_at" else 200)
-        self.tree_h.pack(fill="both", expand=True, padx=8, pady=(0, 8))
-        self.tree_h.bind("<<TreeviewSelect>>", self._on_select_herramienta)
+        self.tree_h.pack(fill="both", expand=True, padx=8, pady=(6, 8))
+        self.tree_h.bind("<<TreeviewSelect>>", self._on_select_herr)
 
-    def _on_select_herramienta(self, _event):
+        # entrada suave: aplicar pequeña animación de aparición
+        self.after(80, lambda: self._fade_in_widget(self.tree_h))
+
+    def _on_select_herr(self, _event):
         sel = self.tree_h.focus()
         if not sel:
             return
         vals = self.tree_h.item(sel, "values")
-        # column order: codigo, nombre, tipo, ubicacion, estado, created_at
         if not vals:
             return
         self.h_vars["Código"].set(vals[0])
@@ -156,112 +181,109 @@ class InterfazPrincipal(tk.Tk):
         self.h_vars["Ubicación"].set(vals[3])
         self.h_vars["Estado"].set(vals[4])
 
-    def _listar_herramientas(self):
-        try:
-            datos = self.herr_model.listar()
-        except Exception as exc:
-            messagebox.showerror("API error", f"No se pudo listar herramientas:\n{exc}")
-            return
-        self.tree_h.delete(*self.tree_h.get_children())
-        # datos esperado: lista de dicts
-        for h in datos:
-            if isinstance(h, list) and len(h) > 0:
-                # en caso de respuesta envolviendo
-                h = h[0]
-            self.tree_h.insert("", "end", values=(
-                h.get("codigo", ""),
-                h.get("nombre", ""),
-                h.get("tipo", ""),
-                h.get("ubicacion", "") or "",
-                h.get("estado", ""),
-                h.get("created_at", "")
-            ))
-
-    def _guardar_herramienta(self):
+    def _guardar_herr(self):
         data = {
             "codigo": self.h_vars["Código"].get().strip(),
             "nombre": self.h_vars["Nombre"].get().strip(),
             "tipo": self.h_vars["Tipo"].get().strip() or "General",
             "ubicacion": self.h_vars["Ubicación"].get().strip(),
-            "estado": self.h_vars["Estado"].get().strip() or "disponible"
+            "estado": self.h_vars["Estado"].get().strip() or "disponible",
         }
         if not data["codigo"] or not data["nombre"]:
             messagebox.showwarning("Validación", "Código y Nombre son obligatorios")
             return
-        try:
-            # si existe en la vista -> update, sino create
-            exists = False
-            for item in self.tree_h.get_children():
-                vals = self.tree_h.item(item, "values")
-                if vals and vals[0] == data["codigo"]:
-                    exists = True
-                    break
-            if exists:
-                # actualizar por código
-                self.herr_model.actualizar(data["codigo"], data)
-            else:
-                self.herr_model.crear(data)
-            self._listar_herramientas()
-            messagebox.showinfo("OK", "Herramienta guardada")
-        except Exception as exc:
-            messagebox.showerror("Error", f"No se pudo guardar herramienta:\n{exc}")
 
-    def _eliminar_herramienta(self):
+        # llamada en hilo para no bloquear UI
+        def job():
+            try:
+                # update if exists in view
+                exists = False
+                for iid in self.tree_h.get_children():
+                    v = self.tree_h.item(iid, "values")
+                    if v and v[0] == data["codigo"]:
+                        exists = True
+                        break
+                if exists:
+                    self.herr_model.actualizar(data["codigo"], data)
+                else:
+                    self.herr_model.crear(data)
+                self._q.put(("reload_herr", None))
+                self._q.put(("msg", ("OK", "Herramienta guardada")))
+            except Exception as exc:
+                self._q.put(("msg", ("ERROR", f"No se pudo guardar herramienta:\n{exc}")))
+
+        threading.Thread(target=job, daemon=True).start()
+
+    def _eliminar_herr(self):
         codigo = self.h_vars["Código"].get().strip()
         if not codigo:
             messagebox.showwarning("Validación", "Seleccione una herramienta para eliminar")
             return
         if not messagebox.askyesno("Confirmar", f"Eliminar herramienta {codigo}?"):
             return
-        try:
-            self.herr_model.eliminar(codigo)
-            self._listar_herramientas()
-            messagebox.showinfo("OK", "Herramienta eliminada")
-        except Exception as exc:
-            messagebox.showerror("Error", f"No se pudo eliminar herramienta:\n{exc}")
 
-    # -----------------------
+        def job():
+            try:
+                self.herr_model.eliminar(codigo)
+                self._q.put(("reload_herr", None))
+                self._q.put(("msg", ("OK", "Herramienta eliminada")))
+            except Exception as exc:
+                self._q.put(("msg", ("ERROR", f"No se pudo eliminar:\n{exc}")))
+
+        threading.Thread(target=job, daemon=True).start()
+
+    def _limpiar_herr(self):
+        for k in self.h_vars:
+            self.h_vars[k].set("")
+
+    # ----------------------
     # Prestamos tab
-    # -----------------------
-    def _build_prestamos_tab(self):
-        frm_top = ttk.Frame(self.tab_pres)
-        frm_top.pack(fill="x", padx=8, pady=8)
+    # ----------------------
+    def _build_pres_tab(self):
+        frm = ttk.Frame(self.tab_pres)
+        frm.pack(fill="x", padx=8, pady=8)
 
         self.p_vars = {
             "herramienta_codigo": tk.StringVar(),
             "responsable": tk.StringVar(),
             "persona_entrega": tk.StringVar(),
-            "persona_recibe": tk.StringVar()
+            "persona_recibe": tk.StringVar(),
         }
 
-        # filas inputs
-        ttk.Label(frm_top, text="Código Herramienta").grid(row=0, column=0, sticky="e", padx=6, pady=4)
-        ttk.Entry(frm_top, textvariable=self.p_vars["herramienta_codigo"], width=30).grid(row=0, column=1, sticky="w")
+        ttk.Label(frm, text="Código Herramienta").grid(row=0, column=0, sticky="e", padx=6, pady=4)
+        ttk.Entry(frm, textvariable=self.p_vars["herramienta_codigo"], width=30).grid(row=0, column=1, sticky="w")
 
-        ttk.Label(frm_top, text="Responsable").grid(row=1, column=0, sticky="e", padx=6, pady=4)
-        ttk.Entry(frm_top, textvariable=self.p_vars["responsable"], width=30).grid(row=1, column=1, sticky="w")
+        ttk.Label(frm, text="Responsable").grid(row=1, column=0, sticky="e", padx=6, pady=4)
+        ttk.Entry(frm, textvariable=self.p_vars["responsable"], width=30).grid(row=1, column=1, sticky="w")
 
-        ttk.Label(frm_top, text="Persona Entrega").grid(row=2, column=0, sticky="e", padx=6, pady=4)
-        ttk.Entry(frm_top, textvariable=self.p_vars["persona_entrega"], width=30).grid(row=2, column=1, sticky="w")
+        ttk.Label(frm, text="Persona Entrega").grid(row=2, column=0, sticky="e", padx=6, pady=4)
+        ttk.Entry(frm, textvariable=self.p_vars["persona_entrega"], width=30).grid(row=2, column=1, sticky="w")
 
-        ttk.Label(frm_top, text="Persona Recibe").grid(row=3, column=0, sticky="e", padx=6, pady=4)
-        ttk.Entry(frm_top, textvariable=self.p_vars["persona_recibe"], width=30).grid(row=3, column=1, sticky="w")
+        ttk.Label(frm, text="Persona Recibe").grid(row=3, column=0, sticky="e", padx=6, pady=4)
+        ttk.Entry(frm, textvariable=self.p_vars["persona_recibe"], width=30).grid(row=3, column=1, sticky="w")
 
-        ttk.Label(frm_top, text="Fecha Entrega").grid(row=0, column=2, sticky="e", padx=6)
-        self.fecha_entrega = DateEntry(frm_top, date_pattern="yyyy-mm-dd")
+        ttk.Label(frm, text="Fecha Entrega").grid(row=0, column=2, sticky="e", padx=6, pady=4)
+        self.fecha_entrega = DateEntry(frm, date_pattern="yyyy-mm-dd")
         self.fecha_entrega.grid(row=0, column=3, sticky="w", padx=6)
 
-        ttk.Label(frm_top, text="Fecha Prevista").grid(row=1, column=2, sticky="e", padx=6)
-        self.fecha_prevista = DateEntry(frm_top, date_pattern="yyyy-mm-dd")
+        ttk.Label(frm, text="Fecha Prevista").grid(row=1, column=2, sticky="e", padx=6, pady=4)
+        self.fecha_prevista = DateEntry(frm, date_pattern="yyyy-mm-dd")
         self.fecha_prevista.grid(row=1, column=3, sticky="w", padx=6)
 
-        btn_registrar = ttk.Button(frm_top, text="Registrar préstamo", command=self._guardar_prestamo)
-        btn_devolver = ttk.Button(frm_top, text="Registrar devolución", command=self._devolver_prestamo)
-        btn_eliminar = ttk.Button(frm_top, text="Eliminar préstamo", command=self._eliminar_prestamo)
-
-        btn_registrar.grid(row=4, column=0, pady=10)
-        btn_devolver.grid(row=4, column=1)
-        btn_eliminar.grid(row=4, column=2)
+        btn_frame = ttk.Frame(frm)
+        btn_frame.grid(row=4, column=0, columnspan=4, pady=8, sticky="w")
+        ttk.Button(btn_frame, text="Registrar préstamo", style="Accent.TButton", command=self._guardar_pres).pack(
+            side="left", padx=4
+        )
+        ttk.Button(btn_frame, text="Registrar devolución", style="Small.TButton", command=self._devolver_pres).pack(
+            side="left", padx=4
+        )
+        ttk.Button(btn_frame, text="Eliminar préstamo", style="Small.TButton", command=self._eliminar_pres).pack(
+            side="left", padx=4
+        )
+        ttk.Button(btn_frame, text="Limpiar", style="Small.TButton", command=self._limpiar_pres).pack(
+            side="left", padx=4
+        )
 
         # treeview prestamos
         cols = ("id", "herramienta_codigo", "responsable", "persona_entrega", "persona_recibe",
@@ -270,56 +292,35 @@ class InterfazPrincipal(tk.Tk):
         for c in cols:
             self.tree_p.heading(c, text=c.replace("_", " ").capitalize())
             self.tree_p.column(c, width=120 if c != "created_at" else 180)
-        self.tree_p.pack(fill="both", expand=True, padx=8, pady=(0, 8))
-        self.tree_p.bind("<<TreeviewSelect>>", self._on_select_prestamo)
+        self.tree_p.pack(fill="both", expand=True, padx=8, pady=(6, 8))
+        self.tree_p.bind("<<TreeviewSelect>>", self._on_select_pres)
 
-    def _on_select_prestamo(self, _event):
+        self.after(80, lambda: self._fade_in_widget(self.tree_p))
+
+    def _on_select_pres(self, _event):
         sel = self.tree_p.focus()
         if not sel:
             return
         vals = self.tree_p.item(sel, "values")
-        # columnas: id, herramienta_codigo, responsable, persona_entrega, persona_recibe, fecha_entrega, fecha_prevista, fecha_devolucion, estado, created_at
         if not vals:
             return
+        # columnas: id, herramienta_codigo, responsable, persona_entrega, persona_recibe, ...
         self.p_vars["herramienta_codigo"].set(vals[1])
         self.p_vars["responsable"].set(vals[2])
         self.p_vars["persona_entrega"].set(vals[3])
         self.p_vars["persona_recibe"].set(vals[4])
-        # si hay fecha_entrega / fecha_prevista se pueden poner en los DateEntry (si parsean)
+        # set date entries if present
         try:
             if vals[5]:
-                dt = datetime.datetime.strptime(vals[5], "%Y-%m-%d")
-                self.fecha_entrega.set_date(dt.date())
+                d = datetime.datetime.strptime(vals[5], "%Y-%m-%d")
+                self.fecha_entrega.set_date(d.date())
             if vals[6]:
-                dt2 = datetime.datetime.strptime(vals[6], "%Y-%m-%d")
-                self.fecha_prevista.set_date(dt2.date())
+                d2 = datetime.datetime.strptime(vals[6], "%Y-%m-%d")
+                self.fecha_prevista.set_date(d2.date())
         except Exception:
             pass
 
-    def _listar_prestamos(self):
-        try:
-            datos = self.pres_model.listar()
-        except Exception as exc:
-            messagebox.showerror("API error", f"No se pudo listar préstamos:\n{exc}")
-            return
-        self.tree_p.delete(*self.tree_p.get_children())
-        for p in datos:
-            if isinstance(p, list) and len(p) > 0:
-                p = p[0]
-            self.tree_p.insert("", "end", values=(
-                p.get("id", ""),
-                p.get("herramienta_codigo", ""),
-                p.get("responsable", ""),
-                p.get("persona_entrega", ""),
-                p.get("persona_recibe", ""),
-                p.get("fecha_entrega", "") or "",
-                p.get("fecha_prevista", "") or "",
-                p.get("fecha_devolucion", "") or "",
-                p.get("estado", ""),
-                p.get("created_at", "")
-            ))
-
-    def _guardar_prestamo(self):
+    def _guardar_pres(self):
         data = {
             "herramienta_codigo": self.p_vars["herramienta_codigo"].get().strip(),
             "responsable": self.p_vars["responsable"].get().strip(),
@@ -331,21 +332,24 @@ class InterfazPrincipal(tk.Tk):
         if not data["herramienta_codigo"] or not data["responsable"]:
             messagebox.showwarning("Validación", "Código herramienta y responsable son obligatorios")
             return
-        try:
-            resp = self.pres_model.crear(data)
-            # si el backend creó correctamente, actualizar estado herramienta
-            try:
-                self.herr_model.actualizar_estado(data["herramienta_codigo"], "prestada")
-            except Exception:
-                pass
-            self._listar_prestamos()
-            self._listar_herramientas()
-            messagebox.showinfo("OK", "Préstamo registrado")
-        except Exception as exc:
-            # si el modelo frontend lanza excepción con detalle del backend, muéstralo
-            messagebox.showerror("Error al crear préstamo", str(exc))
 
-    def _devolver_prestamo(self):
+        def job():
+            try:
+                resp = self.pres_model.crear(data)
+                # intentar actualizar estado herramienta (no bloquear)
+                try:
+                    self.herr_model.actualizar_estado(data["herramienta_codigo"], "prestada")
+                except Exception:
+                    pass
+                self._q.put(("reload_all", None))
+                self._q.put(("msg", ("OK", "Préstamo registrado")))
+            except Exception as exc:
+                # pasar detalle al hilo UI
+                self._q.put(("msg", ("ERROR", f"No se pudo crear préstamo:\n{exc}")))
+
+        threading.Thread(target=job, daemon=True).start()
+
+    def _devolver_pres(self):
         sel = self.tree_p.focus()
         if not sel:
             messagebox.showwarning("Validación", "Seleccione un préstamo")
@@ -354,20 +358,23 @@ class InterfazPrincipal(tk.Tk):
         pid = vals[0]
         codigo = vals[1]
         fecha_devol = datetime.date.today().strftime("%Y-%m-%d")
-        try:
-            self.pres_model.actualizar(pid, {"fecha_devolucion": fecha_devol, "estado": "devuelto"})
-            # cambiar estado herramienta
-            try:
-                self.herr_model.actualizar_estado(codigo, "disponible")
-            except Exception:
-                pass
-            self._listar_prestamos()
-            self._listar_herramientas()
-            messagebox.showinfo("OK", "Devolución registrada")
-        except Exception as exc:
-            messagebox.showerror("Error", f"No se pudo registrar la devolución:\n{exc}")
 
-    def _eliminar_prestamo(self):
+        def job():
+            try:
+                # note: models expect 'fecha_devolucion' field name — unify with backend
+                self.pres_model.actualizar(pid, {"fecha_devolucion": fecha_devol, "estado": "devuelto"})
+                try:
+                    self.herr_model.actualizar_estado(codigo, "disponible")
+                except Exception:
+                    pass
+                self._q.put(("reload_all", None))
+                self._q.put(("msg", ("OK", "Devolución registrada")))
+            except Exception as exc:
+                self._q.put(("msg", ("ERROR", f"No se pudo registrar devolución:\n{exc}")))
+
+        threading.Thread(target=job, daemon=True).start()
+
+    def _eliminar_pres(self):
         sel = self.tree_p.focus()
         if not sel:
             messagebox.showwarning("Validación", "Seleccione un préstamo para eliminar")
@@ -376,105 +383,297 @@ class InterfazPrincipal(tk.Tk):
         pid = vals[0]
         if not messagebox.askyesno("Confirmar", f"Eliminar préstamo id={pid}?"):
             return
-        try:
-            self.pres_model.eliminar(pid)
-            self._listar_prestamos()
-            messagebox.showinfo("OK", "Préstamo eliminado")
-        except Exception as exc:
-            messagebox.showerror("Error", f"No se pudo eliminar préstamo:\n{exc}")
 
-    # -----------------------
+        def job():
+            try:
+                self.pres_model.eliminar(pid)
+                self._q.put(("reload_pres", None))
+                self._q.put(("msg", ("OK", "Préstamo eliminado")))
+            except Exception as exc:
+                self._q.put(("msg", ("ERROR", f"No se pudo eliminar préstamo:\n{exc}")))
+
+        threading.Thread(target=job, daemon=True).start()
+
+    def _limpiar_pres(self):
+        for k in self.p_vars:
+            self.p_vars[k].set("")
+        # reset date entries to today
+        self.fecha_entrega.set_date(datetime.date.today())
+        self.fecha_prevista.set_date(datetime.date.today())
+
+    # ----------------------
     # Busqueda tab
-    # -----------------------
-    def _build_busqueda_tab(self):
+    # ----------------------
+    def _build_busq_tab(self):
         frm = ttk.Frame(self.tab_busq)
         frm.pack(fill="x", padx=8, pady=8)
-        ttk.Label(frm, text="Buscar (código/nombre/estado)").grid(row=0, column=0, padx=6)
+        ttk.Label(frm, text="Buscar (código/nombre/tipo/estado)").grid(row=0, column=0, padx=6)
         self.q_var = tk.StringVar()
         ttk.Entry(frm, textvariable=self.q_var, width=40).grid(row=0, column=1, padx=6)
-        ttk.Button(frm, text="Buscar", command=self._buscar).grid(row=0, column=2, padx=6)
+        ttk.Button(frm, text="Buscar", style="Small.TButton", command=self._buscar).grid(row=0, column=2, padx=6)
 
         # resultados
         cols = ("codigo", "nombre", "tipo", "ubicacion", "estado")
         self.tree_b = ttk.Treeview(self.tab_busq, columns=cols, show="headings")
         for c in cols:
             self.tree_b.heading(c, text=c.capitalize())
-            self.tree_b.column(c, width=180)
+            self.tree_b.column(c, width=200)
         self.tree_b.pack(fill="both", expand=True, padx=8, pady=8)
 
     def _buscar(self):
-        q = self.q_var.get().strip().lower()
+        q = self.q_var.get().strip()
+        if not q:
+            messagebox.showinfo("Buscar", "Especifique al menos una letra o número para buscar")
+            return
+
+        # búsqueda asíncrona para no bloquear
+        def job():
+            try:
+                datos = self.herr_model.listar()
+                self._q.put(("search_results", (q, datos)))
+            except Exception as exc:
+                self._q.put(("msg", ("ERROR", f"No se pudo buscar:\n{exc}")))
+
+        threading.Thread(target=job, daemon=True).start()
+
+    # ----------------------
+    # Carga / recarga (optimizada)
+    # ----------------------
+    def _load_all_async(self):
+        """Carga herramientas y préstamos en paralelo, con debounce si se llama repetidamente."""
+        # cancelar debounce si existe
+        if self._debounce_timer:
+            try:
+                self.after_cancel(self._debounce_timer)
+            except Exception:
+                pass
+        # programar ejecución en 200ms (debounce)
+        self._debounce_timer = self.after(200, lambda: threading.Thread(target=self._load_all_job, daemon=True).start())
+
+    def _load_all_job(self):
+        """Job que carga ambas listas sin bloquear UI."""
+        # obtain both lists concurrently
+        results = {}
+
+        def load_herr():
+            try:
+                results["herr"] = self.herr_model.listar()
+            except Exception as e:
+                results["herr_exc"] = e
+
+        def load_pres():
+            try:
+                results["pres"] = self.pres_model.listar()
+            except Exception as e:
+                results["pres_exc"] = e
+
+        t1 = threading.Thread(target=load_herr)
+        t2 = threading.Thread(target=load_pres)
+        t1.start()
+        t2.start()
+        t1.join()
+        t2.join()
+
+        self._q.put(("load_results", results))
+
+    def _load_herramientas_async(self):
+        threading.Thread(target=self._load_herr_job, daemon=True).start()
+
+    def _load_herr_job(self):
         try:
             datos = self.herr_model.listar()
+            self._q.put(("herr_list", datos))
         except Exception as exc:
-            messagebox.showerror("API error", f"No se pudo buscar:\n{exc}")
-            return
-        self.tree_b.delete(*self.tree_b.get_children())
-        for h in datos:
-            if isinstance(h, list) and len(h) > 0:
-                h = h[0]
-            if (q in (h.get("codigo", "").lower()) or
-                    q in (h.get("nombre", "").lower()) or
-                    q in (h.get("tipo", "").lower()) or
-                    q in (h.get("estado", "").lower())):
-                self.tree_b.insert("", "end", values=(
-                    h.get("codigo", ""),
-                    h.get("nombre", ""),
-                    h.get("tipo", ""),
-                    h.get("ubicacion", ""),
-                    h.get("estado", "")
-                ))
+            self._q.put(("msg", ("ERROR", f"No se pudo listar herramientas:\n{exc}")))
 
-    # -----------------------
+    def _load_pres_async(self):
+        threading.Thread(target=self._load_pres_job, daemon=True).start()
+
+    def _load_pres_job(self):
+        try:
+            datos = self.pres_model.listar()
+            self._q.put(("pres_list", datos))
+        except Exception as exc:
+            self._q.put(("msg", ("ERROR", f"No se pudo listar préstamos:\n{exc}")))
+
+    # ----------------------
     # Backup loop (hilo)
-    # -----------------------
+    # ----------------------
     def _backup_loop(self):
+        """Hilo daemon que ejecuta backups periódicamente y actualiza contador.
+        No escribe ruta completa en la UI, solo la hora del último respaldo.
         """
-        Ejecuta backups periódicos en hilo aparte. Actualiza la UI con after().
-        Intenta usar backup_ctrl.ejecutar_backup() o backup_ctrl.hacer_backup().
-        """
+        interval = INTERVALO_BACKUP_SEG or 300
+        next_seconds = interval
         while not self._stop_event.is_set():
             try:
-                # llamar al método disponible
+                # ejecutar backup (nombre flexible del método)
                 path = None
                 if hasattr(self.backup_ctrl, "ejecutar_backup"):
                     path = self.backup_ctrl.ejecutar_backup()
                 elif hasattr(self.backup_ctrl, "hacer_backup"):
                     path = self.backup_ctrl.hacer_backup()
-                else:
-                    # si no existe ninguno, intentamos ejecutar con nombre antiguo
-                    if hasattr(self.backup_ctrl, "backup"):
-                        path = self.backup_ctrl.backup()
-                # actualizar UI desde hilo
-                self._last_backup_path = path
-                self._next_backup_seconds = self.BACKUP_INTERVAL
-                self.after(0, lambda: self.lbl_backup.config(text=f"Respaldo: {path or '—'}"))
+                elif hasattr(self.backup_ctrl, "backup"):
+                    path = self.backup_ctrl.backup()
+
+                now = datetime.datetime.now()
+                self._last_backup_time = now
+                # push to UI: do not expose path, only time
+                self._q.put(("backup_done", now))
             except Exception as exc:
-                # no queremos detener el hilo por errores; actualizamos la etiqueta
-                self.after(0, lambda: self.lbl_backup.config(text=f"Respaldo error"))
-                print("Error backup:", exc)
-            # cuenta regresiva visual (cada segundo)
-            for _ in range(self.BACKUP_INTERVAL):
+                # report error but do not stop
+                self._q.put(("msg", ("ERROR", f"Error backup: {exc}")))
+            # countdown with 1s steps
+            for i in range(interval):
                 if self._stop_event.is_set():
                     break
-                self._next_backup_seconds -= 1
-                # actualiza contador (mm:ss)
-                mins, secs = divmod(max(self._next_backup_seconds, 0), 60)
-                text = f"Siguiente respaldo en {mins:02d}:{secs:02d}"
-                self.after(0, lambda t=text: self.lbl_counter.config(text=t))
+                secs = interval - i
+                self._q.put(("backup_countdown", secs))
                 time.sleep(1)
-            # al terminar el intervalo, resetear contador para la próxima iteración
-            self._next_backup_seconds = self.BACKUP_INTERVAL
 
-    # -----------------------
-    # cierre app (limpieza hilo)
-    # -----------------------
+    # ----------------------
+    # Cola -> UI processing
+    # ----------------------
+    def _process_queue(self):
+        """Procesa mensajes de la cola puestos por los hilos."""
+        try:
+            while True:
+                item = self._q.get_nowait()
+                if not item:
+                    continue
+                key, payload = item
+                if key == "load_results":
+                    r = payload
+                    if "herr_exc" in r:
+                        messagebox.showerror("API error", f"No se pudo listar herramientas:\n{r['herr_exc']}")
+                    if "pres_exc" in r:
+                        messagebox.showerror("API error", f"No se pudo listar préstamos:\n{r['pres_exc']}")
+                    if "herr" in r:
+                        self._populate_tree_h(r["herr"])
+                    if "pres" in r:
+                        self._populate_tree_p(r["pres"])
+                elif key == "herr_list":
+                    self._populate_tree_h(payload)
+                elif key == "pres_list":
+                    self._populate_tree_p(payload)
+                elif key == "reload_herr":
+                    self._load_herr_job()
+                elif key == "reload_pres":
+                    self._load_pres_job()
+                elif key == "reload_all":
+                    self._load_all_async()
+                elif key == "search_results":
+                    q, datos = payload
+                    self._populate_search(q, datos)
+                elif key == "backup_done":
+                    t = payload
+                    self.lbl_backup.config(text=f"Último respaldo: {t.strftime('%Y-%m-%d %H:%M:%S')}")
+                    # trigger pulse animation (suave)
+                    self._pulse_label(self.lbl_backup, times=2)
+                elif key == "backup_countdown":
+                    secs = payload
+                    mins, s = divmod(secs, 60)
+                    self.lbl_next.config(text=f"Siguiente: {mins:02d}:{s:02d}")
+                elif key == "msg":
+                    typ, txt = payload
+                    if typ == "OK":
+                        # mostrar info pero no molestar: usar showinfo
+                        messagebox.showinfo("OK", txt)
+                    else:
+                        messagebox.showerror(typ, txt)
+                elif key == "reload_herr":
+                    self._load_herr_job()
+                self._q.task_done()
+        except Empty:
+            pass
+        # volver a revisar cola
+        self.after(100, self._process_queue)
+
+    # ----------------------
+    # population helpers
+    # ----------------------
+    def _populate_tree_h(self, datos):
+        self.tree_h.delete(*self.tree_h.get_children())
+        for h in datos:
+            # backend may return datetimes; keep safe get
+            self.tree_h.insert("", "end", values=(
+                h.get("codigo", ""),
+                h.get("nombre", ""),
+                h.get("tipo", "") or h.get("categoria", ""),
+                h.get("ubicacion", "") or "",
+                h.get("estado", ""),
+                h.get("created_at", "") or "",
+            ))
+
+    def _populate_tree_p(self, datos):
+        self.tree_p.delete(*self.tree_p.get_children())
+        for p in datos:
+            self.tree_p.insert("", "end", values=(
+                p.get("id", ""),
+                p.get("herramienta_codigo", "") or p.get("codigo", ""),
+                p.get("responsable", ""),
+                p.get("persona_entrega", ""),
+                p.get("persona_recibe", ""),
+                p.get("fecha_entrega", "") or "",
+                p.get("fecha_prevista", "") or "",
+                p.get("fecha_devolucion", "") or "",
+                p.get("estado", ""),
+                p.get("created_at", "") or "",
+            ))
+
+    def _populate_search(self, q, datos):
+        self.tree_b.delete(*self.tree_b.get_children())
+        ql = q.lower()
+        for h in datos:
+            if isinstance(h, list) and len(h) > 0:
+                h = h[0]
+            code = (h.get("codigo", "") or "").lower()
+            name = (h.get("nombre", "") or "").lower()
+            tipo = (h.get("tipo", "") or h.get("categoria", "") or "").lower()
+            estado = (h.get("estado", "") or "").lower()
+            if ql in code or ql in name or ql in tipo or ql in estado:
+                self.tree_b.insert("", "end", values=(
+                    h.get("codigo", ""),
+                    h.get("nombre", ""),
+                    h.get("tipo", "") or h.get("categoria", ""),
+                    h.get("ubicacion", "") or "",
+                    h.get("estado", ""),
+                ))
+
+    # ----------------------
+    # util animations
+    # ----------------------
+    def _fade_in_widget(self, widget, steps=8, delay=25):
+        """Aparición simple: ajusta alfa mediante background alternado (simulación)."""
+        # note: Tkinter doesn't support widget alpha easily; we simulate tiny delays for 'soft' load
+        for i in range(steps):
+            self.after(i * delay, lambda: widget.update())
+
+    def _pulse_label(self, label, times=3, period=300):
+        """Pulso suave cambiando el color de texto por breves instantes."""
+        def pulse_once(count):
+            if count <= 0:
+                label.config(foreground="black")
+                return
+            # cambiar a color 'acento' y volver
+            label.config(foreground="#0B7CFF")
+            self.after(int(period / 2), lambda: label.config(foreground="black"))
+            self.after(period, lambda: pulse_once(count - 1))
+
+        pulse_once(times)
+
+    # ----------------------
+    # cierre / limpieza
+    # ----------------------
     def destroy(self):
-        # parar el hilo de backup
+        # indicar al hilo que pare
         self._stop_event.set()
         super().destroy()
 
 
+# ----------------------
+# ejecutar
+# ----------------------
 def iniciar_aplicacion():
     app = InterfazPrincipal()
     app.mainloop()

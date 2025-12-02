@@ -1,0 +1,181 @@
+{
+  "timestamp": "2025-12-02T20:43:14Z",
+  "herramientas": [
+    {
+      "id": 1,
+      "codigo": "H001",
+      "nombre": "Taladro",
+      "tipo": "Eléctrica",
+      "ubicacion": "Estante A",
+      "estado": "disponible",
+      "created_at": "2025-01-01T10:00:00Z",
+      "updated_at": "2025-01-01T10:00:00Z"
+    },
+    {
+      "id": 2,
+      "codigo": "H002",
+      "nombre": "Martillo",
+      "tipo": "Manual",
+      "ubicacion": "Estante B",
+      "estado": "disponible",
+      "created_at": "2025-01-02T10:00:00Z",
+      "updated_at": "2025-12-02T20:38:38.321641Z"
+    },
+    {
+      "id": 3,
+      "codigo": "H003",
+      "nombre": "Sierra",
+      "tipo": "Corte",
+      "ubicacion": "Estante C",
+      "estado": "prestada",
+      "created_at": "2025-01-03T10:00:00Z",
+      "updated_at": "2025-01-03T10:00:00Z"
+    },
+    {
+      "id": 4,
+      "codigo": "H004",
+      "nombre": "Llave inglesa",
+      "tipo": "Manual",
+      "ubicacion": "Estante D",
+      "estado": "disponible",
+      "created_at": "2025-01-04T10:00:00Z",
+      "updated_at": "2025-01-04T10:00:00Z"
+    },
+    {
+      "id": 5,
+      "codigo": "H005",
+      "nombre": "Pulidora",
+      "tipo": "Eléctrica",
+      "ubicacion": "Estante E",
+      "estado": "prestada",
+      "created_at": "2025-01-05T10:00:00Z",
+      "updated_at": "2025-01-05T10:00:00Z"
+    },
+    {
+      "id": 6,
+      "codigo": "H009",
+      "nombre": "alicate",
+      "tipo": "General",
+      "ubicacion": "Estante B",
+      "estado": "prestada",
+      "created_at": "2025-12-01T04:50:23.794547Z",
+      "updated_at": "2025-12-01T04:50:34.618974Z"
+    },
+    {
+      "id": 8,
+      "codigo": "H008",
+      "nombre": "Portatil",
+      "tipo": "Electronico",
+      "ubicacion": "Bodega U",
+      "estado": "disponible",
+      "created_at": "2025-12-02T17:59:02.618558Z",
+      "updated_at": "2025-12-02T18:01:41.138296Z"
+    }
+  ],
+  "prestamos": [
+    {
+      "id": 15,
+      "herramienta_codigo": "H002",
+      "responsable": "Mgiuel",
+      "persona_entrega": "Juanchito",
+      "persona_recibe": "Miguel",
+      "fecha_entrega": "2025-12-01",
+      "fecha_prevista": "2025-12-02",
+      "fecha_devolucion": null,
+      "estado": "activo",
+      "created_at": "2025-12-02T20:38:15.761780Z",
+      "updated_at": "2025-12-02T20:38:15.761820Z"
+    },
+    {
+      "id": 13,
+      "herramienta_codigo": "H005",
+      "responsable": "Mateo",
+      "persona_entrega": "juliana",
+      "persona_recibe": "Mateo",
+      "fecha_entrega": "2025-12-01",
+      "fecha_prevista": "2025-12-02",
+      "fecha_devolucion": null,
+      "estado": "activo",
+      "created_at": "2025-12-02T18:02:22.766001Z",
+      "updated_at": "2025-12-02T18:02:22.766037Z"
+    },
+    {
+      "id": 12,
+      "herramienta_codigo": "H003",
+      "responsable": "Ana",
+      "persona_entrega": "Jhon",
+      "persona_recibe": "Ana",
+      "fecha_entrega": "2025-12-01",
+      "fecha_prevista": "2025-12-17",
+      "fecha_devolucion": null,
+      "estado": "activo",
+      "created_at": "2025-12-02T18:01:08.956057Z",
+      "updated_at": "2025-12-02T18:01:08.956079Z"
+    },
+    {
+      "id": 3,
+      "herramienta_codigo": "H002",
+      "responsable": "Carlos",
+      "persona_entrega": "Carlos",
+      "persona_recibe": "Carlos",
+      "fecha_entrega": "2025-01-15",
+      "fecha_prevista": "2025-01-20",
+      "fecha_devolucion": null,
+      "estado": "activo",
+      "created_at": "2025-01-15T09:00:00Z",
+      "updated_at": "2025-01-15T09:00:00Z"
+    },
+    {
+      "id": 2,
+      "herramienta_codigo": "H001",
+      "responsable": "Luis",
+      "persona_entrega": "Luis",
+      "persona_recibe": "Luis",
+      "fecha_entrega": "2025-01-12",
+      "fecha_prevista": "2025-01-18",
+      "fecha_devolucion": null,
+      "estado": "activo",
+      "created_at": "2025-01-12T10:00:00Z",
+      "updated_at": "2025-01-12T10:00:00Z"
+    },
+    {
+      "id": 1,
+      "herramienta_codigo": "H003",
+      "responsable": "Ana",
+      "persona_entrega": "Jhon",
+      "persona_recibe": "Ana",
+      "fecha_entrega": "2025-01-10",
+      "fecha_prevista": "2025-01-17",
+      "fecha_devolucion": null,
+      "estado": "activo",
+      "created_at": "2025-01-10T08:00:00Z",
+      "updated_at": "2025-01-10T08:00:00Z"
+    },
+    {
+      "id": 4,
+      "herramienta_codigo": "H005",
+      "responsable": "Mateo",
+      "persona_entrega": "Mateo",
+      "persona_recibe": "Mateo",
+      "fecha_entrega": "2025-01-05",
+      "fecha_prevista": "2025-01-11",
+      "fecha_devolucion": null,
+      "estado": "activo",
+      "created_at": "2025-01-05T12:00:00Z",
+      "updated_at": "2025-01-05T12:00:00Z"
+    },
+    {
+      "id": 5,
+      "herramienta_codigo": "H004",
+      "responsable": "Sofia",
+      "persona_entrega": "Sofia",
+      "persona_recibe": "David",
+      "fecha_entrega": "2025-01-01",
+      "fecha_prevista": "2025-01-08",
+      "fecha_devolucion": null,
+      "estado": "activo",
+      "created_at": "2025-01-01T11:00:00Z",
+      "updated_at": "2025-01-01T11:00:00Z"
+    }
+  ]
+}

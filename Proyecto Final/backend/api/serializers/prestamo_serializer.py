@@ -3,10 +3,8 @@ from api.models.prestamo import Prestamo
 
 
 class PrestamoSerializer(serializers.ModelSerializer):
-    # Campos de fecha opcionales
-    fecha_salida = serializers.DateField(required=False, allow_null=True)
-    fecha_prevista = serializers.DateField(required=False, allow_null=True)
     fecha_entrega = serializers.DateField(required=False, allow_null=True)
+    fecha_prevista = serializers.DateField(required=False, allow_null=True)
     fecha_devolucion = serializers.DateField(required=False, allow_null=True)
 
     class Meta:
@@ -17,9 +15,8 @@ class PrestamoSerializer(serializers.ModelSerializer):
             "responsable",
             "persona_entrega",
             "persona_recibe",
-            "fecha_salida",
-            "fecha_prevista",
             "fecha_entrega",
+            "fecha_prevista",
             "fecha_devolucion",
             "estado",
             "created_at",
@@ -27,33 +24,23 @@ class PrestamoSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["id", "created_at", "updated_at"]
 
-    # Limpieza de código herramienta
-    def validate_herramienta_codigo(self, value):
-        return str(value).strip()
+        extra_kwargs = {
+            "responsable": {"required": False},
+            "persona_entrega": {"required": False},
+            "persona_recibe": {"required": False},
+            "fecha_entrega": {"required": False},
+            "fecha_prevista": {"required": False},
+            "estado": {"required": False},
+        }
 
-    # VALIDACIÓN GLOBAL REPARADA
     def validate(self, data):
+        request = self.context.get("request")
 
-        # Si no envían responsable -> usar persona_entrega
-        if not data.get("responsable"):
-            data["responsable"] = data.get("persona_entrega", "N/A")
+        # Solo exigir "responsable" en creación
+        if request and request.method == "POST":
+            if not data.get("responsable"):
+                raise serializers.ValidationError({
+                    "responsable": "Este campo es requerido."
+                })
 
         return data
-
-    # CREATE REPARADO
-    def create(self, validated_data):
-
-        # Autocompletar responsable si viene vacío
-        if not validated_data.get("responsable"):
-            validated_data["responsable"] = validated_data.get("persona_entrega", "N/A")
-
-        return super().create(validated_data)
-
-    # UPDATE REPARADO (para devoluciones)
-    def update(self, instance, validated_data):
-
-        # Para update nunca forzar "responsable"
-        if not validated_data.get("responsable"):
-            validated_data["responsable"] = instance.responsable
-
-        return super().update(instance, validated_data)
