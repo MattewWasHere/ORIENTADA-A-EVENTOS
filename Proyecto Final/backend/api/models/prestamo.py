@@ -1,5 +1,12 @@
 from django.db import models
+"""
+la clase Prestamo representa un registro de préstamo de una herramienta en el sistema.
+Contiene información sobre la herramienta prestada, las personas involucradas,
 
+Fucniones clave:  'herramienta_codigo' vincula el préstamo a una herramienta específica mediante su código.
+'responsable' indica quién es responsable del préstamo.
+
+"""
 class Prestamo(models.Model):
     herramienta_codigo = models.CharField(max_length=50)
     responsable = models.CharField(max_length=200)

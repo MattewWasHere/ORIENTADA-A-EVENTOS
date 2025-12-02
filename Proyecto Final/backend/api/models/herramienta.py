@@ -1,5 +1,13 @@
 from django.db import models
+"""
+la clase Herramienta representa una herramienta en el sistema de gestión de herramientas.
+Contiene atributos clave como código, nombre, tipo, ubicación y estado.
 
+Funciones clave:- 'codigo' es un identificador único para cada herramienta.
+- 'estado' indica si la herramienta está disponible, prestada o en mantenimiento.
+- Los campos 'created_at' y 'updated_at' rastrean la creación y última actualización de la herramienta.
+
+"""
 class Herramienta(models.Model):
     codigo = models.CharField(max_length=20, unique=True)
     nombre = models.CharField(max_length=100)
